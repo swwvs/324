@@ -3,9 +3,14 @@ import re
 import hashlib
 import csv
 import sqlite3
+from tkcalendar import Calendar
+import logging
 import tkinter.messagebox
+
 class Login:
+    global getlogID
     def __init__(self):
+        global getlogID
         global logidentry, logpassentry
         self.window = tk.Tk()
         self.window.title("Login")
@@ -22,6 +27,7 @@ class Login:
 
         self.loginButon = tk.Button(self.window, text="login", width='5', command=self.validateLogin, bg='gray')
         self.loginButon.grid(columnspan=2, row=2, sticky='ew')
+        getlogID = self.logidentry.get()
         self.window.mainloop()
 
     def validateLogin(self):
@@ -31,11 +37,11 @@ class Login:
         passhash = hashlib.sha256(password.encode()).hexdigest()
 
         getlogID = self.logidentry.get()
-        connection = sqlite3.connect("k6.db")
+        connection = sqlite3.connect("k7.db")
         adminIdmatch = connection.execute(
             "select ID from KSU where LENGTH(ID) >9").fetchall()  # returns all admins wich ids length > 9
         passmatch = connection.execute(
-            f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}'").fetchone()  # returns 1 if stu pass found OR 0 IF NOT FOUND
+            f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}'").fetchone()  # returns 1 if  pass found OR 0 IF NOT FOUND
         adminpassmatch = connection.execute(
             f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}' and ID ={self.logidentry.get()} and LENGTH(ID) >9").fetchone()  # returns 1 if admin pass found OR 0 IF NOT FOUND
         print(adminpassmatch[0])
@@ -43,7 +49,6 @@ class Login:
         row = [x[0] for x in adminIdmatch]  # check id is more than if true he is admin
 
         for x in row:
-            # print("typ x: ", type(x), "type gt", type(getlogID))
             if int(getlogID) == int(x):
                 if adminpassmatch[0] == 1:
                     self.window.destroy()
@@ -52,9 +57,10 @@ class Login:
             else:
                 print("Not Admin")
 
-        idPat = re.compile("^[0-9]{9}$")
-        if not re.search(idPat, getlogID):
-            tk.messagebox.showinfo('Error', "ID must contain exactly 9 Numbers")
+        idPat = re.compile("^[0-9]{10}$")
+        idPat6 = re.compile("^[0-9]{6}$")
+        if not (re.search(idPat, getlogID) or re.search(idPat6, getlogID)):
+            tk.messagebox.showinfo('Error', "ID must contain exactly 10  or 6 Numbers")
             return
 
         if passmatch[0] == 0:
@@ -63,8 +69,13 @@ class Login:
         self.window.destroy()
         import User
         User.User()
+
         connection.close()
     def go_signup(self):
         self.window.destroy()
         import Signup
         Signup.Signup()
+
+    def saveId(self,getlogID2):
+        self.getlogID = getlogID2
+        return getlogID
