@@ -6,6 +6,8 @@ import sqlite3
 from tkcalendar import Calendar
 import logging
 import tkinter.messagebox
+from tkinter import ttk
+
 class Signup:
     def __init__(self):
         self.window = tk.Tk()
@@ -44,16 +46,12 @@ class Signup:
         self.team_label = tk.Label(self.window, text="type:")
         self.team_label.grid(row=5, column=0)
         type_var = tk.StringVar()
-        self.team_radio_a = tk.Radiobutton(self.window, text="Student", value="Student", variable=type_var)
-        self.team_radio_a.grid(row=5, column=1)
-        self.team_radio_b = tk.Radiobutton(self.window, text="Faculty", value="Faculty", variable=type_var)
-        self.team_radio_b.grid(row=5, column=2)
-        self.team_radio_c = tk.Radiobutton(self.window, text="Employee", value="Employee", variable=type_var)
-        self.team_radio_c.grid(row=5, column=3)
+        self.user_type_combobox = ttk.Combobox(self.window, textvariable=type_var, values=["Student", "Employee", "Faculty"])
+        self.user_type_combobox.grid(row=5, column=1)
         self.type9 = type_var
+        print( self.type9)
         self.button1 = tk.Button(self.window, text="Enter", command=self.action, bg='gray')
         self.button1.grid(row='6', column='0', columnspan=2, sticky='ew')
-
 
         self.window.mainloop()
 
@@ -63,46 +61,49 @@ class Signup:
         Login.Login()
 
     def action(self):
-            password = self.passEntry.get()
-            passhash = hashlib.sha256(password.encode()).hexdigest()
-            global id
-            fname = self.entry1.get()
-            lname = self.entry2.get()
-            id = self.idEntry.get()
-            phone = self.phoneEntry.get()
-            email = self.emailEntry.get()
-            typeo =self.type9.get()
+        password = self.passEntry.get()
+        passhash = hashlib.sha256(password.encode()).hexdigest()
+        global id
+        fname = self.entry1.get()
+        lname = self.entry2.get()
+        id = self.idEntry.get()
+        phone = self.phoneEntry.get()
+        email = self.emailEntry.get()
+        typeo = self.type9.get()
+        print(typeo)
+        connection = sqlite3.connect("k7.db")
+        checkHaveAcc = connection.execute(f"select count() from KSU WHERE ID = {self.idEntry.get()} ").fetchone()
+        print(checkHaveAcc[0])
+        if checkHaveAcc[0] == 1:
+            tk.messagebox.showinfo('Error', 'You already have Account')
 
-            connection = sqlite3.connect("k7.db")
-            checkHaveAcc = connection.execute(f"select count() from KSU WHERE ID = {self.idEntry.get()} ").fetchone()
-            print(checkHaveAcc[0])
-            if checkHaveAcc[0] == 1:
-                    tk.messagebox.showinfo('Error', 'You already have Account')
+        passPat = re.compile("^[a-zA-Z0-9]{6,}$")
+        idPat = re.compile("^[0-9]{10}$")
+        idPat6 = re.compile("^[0-9]{6}$")
+        emailVld = re.compile("^([a-zA-Z0-9\._-]+)(@ksu\.edu\.sa)$")
+        phoneVld = re.compile("^(05)[0-9]{8}$")
 
-            passPat = re.compile("^[a-zA-Z0-9]{6,}$")
-            idPat = re.compile("^[0-9]{10}$")
-            emailVld = re.compile("^([a-zA-Z0-9\._-]+)(@student\.ksu\.edu\.sa)$")
-            phoneVld = re.compile("^(05)[0-9]{8}$")
+        if not re.search(passPat, password):
+            tk.messagebox.showinfo('Error', "Wrong input Password should have at least 6 or more digits ")
+            return
 
-            if not re.search(passPat, password):
-                    tk.messagebox.showinfo('Error', "Wrong input Password should have at least 6 or more digits ")
-                    return
+        if not (re.search(idPat, id) or re.search(idPat6, id)):
+            tk.messagebox.showinfo('Error', "ID must contain exactly 10  or 6 Numbers")
+            return
 
-            if not re.search(idPat, id):
-                    tk.messagebox.showinfo('Error', "ID must contain exactly 10 Numbers")
-                    return
+        if not re.search(emailVld, email):
+            tk.messagebox.showinfo('Error', "wrong email")
+            return
 
-            if not re.search(emailVld, email):
-                    tk.messagebox.showinfo('Error', "wrong email")
-                    return
+        if not re.search(phoneVld, phone):
+            tk.messagebox.showinfo('Error', "wrong phone")
+            return
 
-            if not re.search(phoneVld, phone):
-                    tk.messagebox.showinfo('Error', "wrong phone")
-                    return
+        connection.execute(f"INSERT INTO KSU VALUES('{fname}','{lname}',{id},'{passhash}','{email}',{phone},'{typeo}')")
+        tk.messagebox.showinfo( 'Data added',"Data added")
+        print("Data added")
+        connection.commit()
+        connection.close()
 
-            connection.execute(f"INSERT INTO KSU VALUES('{fname}','{lname}',{id},'{passhash}','{email}',{phone},'{typeo}')")
-            print("Data added")
-            connection.commit()
-            connection.close()
+
 Signup()
-
