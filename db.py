@@ -15,23 +15,21 @@ connection.execute('''CREATE TABLE IF NOT EXISTS KSU(
 connection.execute('''CREATE TABLE IF NOT EXISTS Cart(
             CartID INT PRIMARY KEY NOT NULL,
             CartCollege TEXT NOT NULL);''')
+
 connection.execute('''CREATE TABLE IF NOT EXISTS Reservations(
                 ID INT NOT NULL,
                 CartID INT NOT NULL,
+                CartCollege TEXT NOT NULL,
                 Start_Date DATE NOT NULL,
                 End_Date DATE NOT NULL,
-                reserved VARCHAR NULL,
+                reserved VARCHAR NOT NULL,
+                Start_Time VARCHAR NOT NULL,
+                End_Time VARCHAR NOT NULL,
                 FOREIGN KEY(ID) REFERENCES KSU(ID),
-                FOREIGN KEY(CartID) REFERENCES Cart(CartID));''')
-connection.execute('''CREATE TABLE IF NOT EXISTS Reservations(
-                ID INT NOT NULL,
-                CartID INT NOT NULL,
-                Start_Date DATE NOT NULL,
-                End_Date DATE NOT NULL,
-                reserved VARCHAR NULL,
-                FOREIGN KEY(ID) REFERENCES KSU(ID),
-                FOREIGN KEY(CartID) REFERENCES Cart(CartID));''')
-sql_del = connection.execute("DELETE FROM Reservations WHERE CartID = 100")
+                FOREIGN KEY(CartID) REFERENCES Cart(CartID),
+                FOREIGN KEY(CartCollege) REFERENCES Cart(CartCollege));''')
+#sql_del = connection.execute("DELETE FROM Reservations WHERE ID = 123456")
+#connection.execute(f"INSERT INTO KSU VALUES('Admin','Admin',1,'6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b','0',0,'Admin')")
 connection.commit()
 connection.close()
 
@@ -107,19 +105,25 @@ if __name__ == '__main__':    # if imported from another file it will not execut
     notebook.add(frame3, text='Reservations')
     connection = sqlite3.connect("k7.db")
 
-    resrvationTv = ttk.Treeview(frame3, columns=(1, 2, 3, 4, 5), show='headings')
+    resrvationTv = ttk.Treeview(frame3, columns=(1, 2, 3, 4, 5,6,7,8), show='headings',height=20)
 
     resrvationTv.heading(1, text="ID")
     resrvationTv.heading(2, text="CartID")
-    resrvationTv.heading(3, text="Start_Date")
-    resrvationTv.heading(4, text="End_Date")
-    resrvationTv.heading(5, text="reserved")
+    resrvationTv.heading(3, text="CartCollege")
+    resrvationTv.heading(4, text="Start_Date")
+    resrvationTv.heading(5, text="End_Date")
+    resrvationTv.heading(6, text="reserved")
+    resrvationTv.heading(7, text="Start_Time")
+    resrvationTv.heading(8, text="End_Time")
 
     resrvationTv.column(1, anchor='center')
     resrvationTv.column(2, anchor='center')
     resrvationTv.column(3, anchor='center')
     resrvationTv.column(4, anchor='center')
     resrvationTv.column(5, anchor='center')
+    resrvationTv.column(6, anchor='center')
+    resrvationTv.column(7, anchor='center')
+    resrvationTv.column(8, anchor='center')
 
     cursor = connection.execute("SELECT * from Reservations")
     count = 0
@@ -127,7 +131,7 @@ if __name__ == '__main__':    # if imported from another file it will not execut
     resrvationTv.pack(anchor='n')
 
     for row in cursor:
-        resrvationTv.insert(parent='', index=count, text='', values=(row[0], row[1], row[2], row[3], row[4]))
+        resrvationTv.insert(parent='', index=count, text='', values=(row[0], row[1], row[2], row[3], row[4],row[5], row[6], row[7]))
         count += 1
 
     connection.close()

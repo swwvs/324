@@ -38,41 +38,35 @@ class Login:
 
         getlogID = self.logidentry.get()
         getlogID2=getlogID
-        getlogID3 = getlogID
         connection = sqlite3.connect("k7.db")
-        adminIdmatch = connection.execute(
-            "select ID from KSU where LENGTH(ID) >9").fetchall()  # returns all admins wich ids length > 9
         passmatch = connection.execute(
             f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}'").fetchone()  # returns 1 if  pass found OR 0 IF NOT FOUND
         adminpassmatch = connection.execute(
-            f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}' and ID ={self.logidentry.get()} and LENGTH(ID) >9").fetchone()  # returns 1 if admin pass found OR 0 IF NOT FOUND
-        print(adminpassmatch[0])
+            f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}' and ID ={getlogID} and LENGTH(ID) <6").fetchone()  # returns 1 if admin pass found OR 0 IF NOT FOUND
 
-        row = [x[0] for x in adminIdmatch]  # check id is more than if true he is admin
-
-        for x in row:
-            if int(getlogID) == int(x):
-                if adminpassmatch[0] == 1:
-                    self.window.destroy()
-                    import Admin
-                    Admin.Admin()
-            else:
-                print("Not Admin")
+        #adminpassmatch[0] why?   =The COUNT() function returns the number of rows that matches a specified criterion.    adminpassmatch=(1,)
+        if adminpassmatch[0] == 1:
+                self.window.destroy()
+                import Admin
+                Admin.Admin()
+        else:
+            print("Not Admin")
 
         idPat = re.compile("^[0-9]{10}$")
         idPat6 = re.compile("^[0-9]{6}$")
         if not (re.search(idPat, getlogID) or re.search(idPat6, getlogID)):
-            tk.messagebox.showinfo('Error', "ID must contain exactly 10  or 6 Numbers")
-            return
+            if adminpassmatch[0] != 1:
+             tk.messagebox.showinfo('Error', "ID must contain exactly 10  or 6 Numbers")
+             return
 
         if passmatch[0] == 0:
             tk.messagebox.showinfo('Error', "wrong pass")
             return
-        self.window.destroy()
-        import User
-
-        User.getlogIDUser = getlogID2
-        User.User()
+        if adminpassmatch[0] != 1:
+            self.window.destroy()
+            import User
+            User.getlogIDUser = getlogID2
+            User.User()
 
 
         connection.close()
@@ -81,6 +75,3 @@ class Login:
         import Signup
         Signup.Signup()
 
-    def saveId(self,getlogID2):
-        self.getlogID = getlogID2
-        return getlogID

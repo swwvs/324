@@ -5,13 +5,15 @@ from tkinter import ttk
 import sqlite3
 from tkcalendar import Calendar
 import tkinter.messagebox
+import logging
+logging.basicConfig(filename="Transactions.log", filemode="a",format='%(levelname)s - %(asctime)s - %(name)s  - %(message)s', level=logging.DEBUG)
 class User():
     global getlogIDUser
 
     def __init__(self):
         self.window = tk.Tk()
         self.window.title("User Window")
-        self.window.geometry('1000x1200')
+        self.window.geometry('1080x1080')
         print(getlogIDUser)
         self.buttonBack = tk.Button(self.window, text='Logout', command=self.logout)
 
@@ -27,19 +29,25 @@ class User():
 
         connection = sqlite3.connect("k7.db")
 
-        resrvationTv = ttk.Treeview(frame2, columns=(1, 2, 3, 4, 5), show='headings')
+        resrvationTv = ttk.Treeview(frame2,columns=(1, 2, 3, 4, 5,6,7,8), show='headings', height=20)
 
         resrvationTv.heading(1, text="ID")
         resrvationTv.heading(2, text="CartID")
-        resrvationTv.heading(3, text="Start_Date")
-        resrvationTv.heading(4, text="End_Date")
-        resrvationTv.heading(5, text="reserved")
+        resrvationTv.heading(3, text="CartCollege")
+        resrvationTv.heading(4, text="Start_Date")
+        resrvationTv.heading(5, text="End_Date")
+        resrvationTv.heading(6, text="reserved")
+        resrvationTv.heading(7, text="Start_Time")
+        resrvationTv.heading(8, text="End_Time")
 
         resrvationTv.column(1, anchor='center')
         resrvationTv.column(2, anchor='center')
         resrvationTv.column(3, anchor='center')
         resrvationTv.column(4, anchor='center')
         resrvationTv.column(5, anchor='center')
+        resrvationTv.column(6, anchor='center')
+        resrvationTv.column(7, anchor='center')
+        resrvationTv.column(8, anchor='center')
 
         cursor = connection.execute("SELECT * from Reservations")
         count = 0
@@ -48,7 +56,7 @@ class User():
 
         for row in cursor:
             resrvationTv.insert(parent='', index=count, text='',
-                                values=(row[0], row[1], row[2], row[3], row[4]))
+                                values=(row[0], row[1], row[2], row[3], row[4],row[5], row[6], row[7]))
             count += 1
         refreshButton = tkinter.Button(frame2, text="Refresh", width='20', command=self.refresh)
         refreshButton.pack()
@@ -92,9 +100,11 @@ class User():
         self.startdate.pack()
         self.startlabel.pack(pady='20')
         self.label1 = tk.Label(frame1, text="Start time::24h 00:00")
-        self.entry1 = tk.Entry(frame1, width="22")
+        self.timeh1 = tk.Entry(frame1, width="22")
+        self.timem1 = tk.Entry(frame1, width="22")
         self.label1.pack()
-        self.entry1.pack()
+        self.timeh1.pack()
+        self.timem1.pack()
 
         self.endcal = Calendar(frame1, date_pattern="Y-mm-DD")
         self.endcal.pack(fill='x')
@@ -142,7 +152,8 @@ class User():
         connection = sqlite3.connect("k7.db")
         reserved="true"
         connection.execute(
-            f"INSERT INTO Reservations VALUES ({getlogIDUser}, {self.combBox.get()},'{self.startcal.get_date()}','{self.endcal.get_date()}','{reserved}')")
+            f"INSERT INTO Reservations VALUES('{int(getlogIDUser)}' , '{self.combBox.get()}','{self.startcal.get_date()}','{self.endcal.get_date()}','{reserved}')")
+        # logging.info(f"Transaction info =(Log ID: {getlogID},CartCollege: {self.combBox.get()},Cart ID: {self.combBox.get()},Start Date: {self.startcal.get_date()},End Date: {self.endcal.get_date()} time)")
         connection.commit()
 
     def go_signup(self):
