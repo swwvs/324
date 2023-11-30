@@ -49,7 +49,6 @@ class Signup:
         self.user_type_combobox = ttk.Combobox(self.window, textvariable=type_var, values=["Student", "Employee", "Faculty"])
         self.user_type_combobox.grid(row=5, column=1)
         self.type9 = type_var
-        print( self.type9)
         self.button1 = tk.Button(self.window, text="Enter", command=self.action, bg='gray')
         self.button1.grid(row='6', column='0', columnspan=2, sticky='ew')
 
@@ -70,10 +69,9 @@ class Signup:
         phone = self.phoneEntry.get()
         email = self.emailEntry.get()
         typeo = self.type9.get()
-        print(typeo)
         connection = sqlite3.connect("k7.db")
         checkHaveAcc = connection.execute(f"select count() from KSU WHERE ID = {self.idEntry.get()} ").fetchone()
-        print(checkHaveAcc[0])
+
         if checkHaveAcc[0] == 1:
             tk.messagebox.showinfo('Error', 'You already have Account')
 
