@@ -6,6 +6,7 @@ import sqlite3
 from tkcalendar import Calendar
 import tkinter.messagebox
 import logging
+from datetime import datetime
 logging.basicConfig(filename="Transactions.log", filemode="a",format='%(levelname)s - %(asctime)s - %(name)s  - %(message)s', level=logging.DEBUG)
 class User():
     global getlogIDUser
@@ -13,7 +14,7 @@ class User():
         self.window = tk.Tk()
         self.window.title("User Window")
         self.window.geometry('1080x1080')
-        print(getlogIDUser)
+
         self.buttonBack = tk.Button(self.window, text='Logout', command=self.logout)
 
         notebook = ttk.Notebook(self.window)
@@ -48,7 +49,7 @@ class User():
         resrvationTv.column(7, anchor='center')
         resrvationTv.column(8, anchor='center')
 
-        cursor = connection.execute("SELECT * from Reservations")
+        cursor = connection.execute(f"SELECT * from Reservations where ID={getlogIDUser};")
         count = 0
 
         resrvationTv.pack(anchor='n')
@@ -57,8 +58,10 @@ class User():
             resrvationTv.insert(parent='', index=count, text='',
                                 values=(row[0], row[1], row[2], row[3], row[4],row[5], row[6], row[7]))
             count += 1
-        refreshButton = tkinter.Button(frame2, text="Refresh", width='20', command=self.refresh)
+        refreshButton = tkinter.Button(frame2, text="Show/Refresh", width='20', command=self.refresh)
         refreshButton.pack()
+        self.buttonBack = tk.Button(frame2, text='Logout', command=self.logout)
+        self.buttonBack.pack()
         connection.close()
         connection = sqlite3.connect("k7.db")
         CartTv = ttk.Treeview(frame1, columns=(1, 2), show='headings')
@@ -185,7 +188,10 @@ class User():
             tkinter.messagebox.showinfo('Error', "you cant choose End Time earlier than Start Time")
             return
         dif = endTime - startTime
-        print(dif)
+
+        if self.endcal.get_date()!=self.startcal.get_date():
+            tk.messagebox.showinfo('Error', "reservation should be in the same day")
+            return
 
         if dif >30 and type=="Student" :
             tk.messagebox.showinfo('Error', "reservation period should not exceed 30 mins for students")
@@ -198,6 +204,8 @@ class User():
             return
 
         #arrange time
+
+
         Shourint = int(Shour)
         if Shourint < 10:
             Shour="0"+Shour
@@ -213,11 +221,28 @@ class User():
         Eminuteint = int(Eminute)
         if Eminuteint < 10:
             Eminute = "0" + Eminute
+        match = connection.execute(f"SELECT * FROM Reservations WHERE CartID = {self.combBox.get()} and CartCollege ='{str(CartCollege)}' ").fetchall()
+        counter = 0
+        for x in match:
 
+            startdate = match[counter][3]
+            if startdate == self.startcal.get_date():
+                starttime = match[counter][6]
+                endtime = match[counter][7]
+                time_obj = datetime.strptime(starttime, "%H:%M")
+                Startinminutes = time_obj.hour * 60 + time_obj.minute
+                time_obj = datetime.strptime(endtime, "%H:%M")
+                Endinminutes = time_obj.hour * 60 + time_obj.minute
+                # endTime is for Reservations
+                if not (Startinminutes < startTime and Endinminutes<startTime ) or (Startinminutes >endTime and Endinminutes>endTime):
+                    tk.messagebox.showinfo('Error', "Cart is reserved ")
+                    return
+            counter = counter + 1
         Starttime=f"{Shour}:{Sminute}"
         Endtime=f"{Ehour}:{Eminute}"
 
-
+       # passmatch = connection.execute(
+           # f"SELECT count() FROM Reservations WHERE CartID = '{self.combBox.get()}' and CartCollege ={CartCollege}").fetchone()
 
         reserved="true"
         connection.execute(
@@ -246,3 +271,7 @@ class User():
         import User
         User.User()
 
+    def logout(self):
+        self.window.destroy()
+        import Signup
+        Signup.Signup()

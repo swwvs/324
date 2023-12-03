@@ -60,7 +60,7 @@ class Admin:
       idPat = re.compile("^[0-9]{3}$")
       connection = sqlite3.connect("k7.db")
       checkHavecart = connection.execute(f"select count() from Cart WHERE CartID = {self.entry1.get()} ").fetchone()
-      print(checkHavecart[0])
+
       if checkHavecart[0] == 1:
          tk.messagebox.showinfo('Error', 'You already have the Cart')
       if not re.search(idPat, plate):
@@ -70,4 +70,3 @@ class Admin:
 
       connection.commit()
       connection.close()
-      print()

@@ -1,7 +1,7 @@
 
 import tkinter
 from tkinter import ttk
-import traceback
+
 import sqlite3
 connection = sqlite3.connect("k7.db")
 connection.execute('''CREATE TABLE IF NOT EXISTS KSU(
@@ -28,9 +28,10 @@ connection.execute('''CREATE TABLE IF NOT EXISTS Reservations(
                 FOREIGN KEY(ID) REFERENCES KSU(ID),
                 FOREIGN KEY(CartID) REFERENCES Cart(CartID),
                 FOREIGN KEY(CartCollege) REFERENCES Cart(CartCollege));''')
-#sql_del = connection.execute("DROP TABLE Reservations;")
+#sql_del = connection.execute("DELETE FROM Reservations where ID=123456;")
 #connection.execute(f"INSERT INTO KSU VALUES('Admin','Admin',1,'6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b','0',0,'Admin')") #1
-
+match = connection.execute("SELECT * FROM Reservations WHERE CartID = 100 and CartCollege ='ksu' ").fetchall()
+print(match)
 connection.commit()
 connection.close()
 
@@ -91,7 +92,7 @@ if __name__ == '__main__':    # if imported from another file it will not execut
     CartTv.column(1, anchor='center')
     CartTv.column(2, anchor='center')
 
-    cursor = connection.execute("SELECT * from Cart")
+    cursor = connection.execute("SELECT * from Reservations ")
     count = 0
 
     CartTv.pack(anchor='n')

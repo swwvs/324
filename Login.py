@@ -1,10 +1,7 @@
 import tkinter as tk
 import re
 import hashlib
-import csv
 import sqlite3
-from tkcalendar import Calendar
-import logging
 import tkinter.messagebox
 
 class Login:
@@ -40,7 +37,7 @@ class Login:
         getlogID2=getlogID
         connection = sqlite3.connect("k7.db")
         passmatch = connection.execute(
-            f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}'").fetchone()  # returns 1 if  pass found OR 0 IF NOT FOUND
+            f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}' and ID ={getlogID}").fetchone()
         adminpassmatch = connection.execute(
             f"SELECT count() FROM KSU WHERE PASSWORD = '{passhash}' and ID ={getlogID} and LENGTH(ID) <6").fetchone()  # returns 1 if admin pass found OR 0 IF NOT FOUND
 
@@ -49,8 +46,7 @@ class Login:
                 self.window.destroy()
                 import Admin
                 Admin.Admin()
-        else:
-            print("Not Admin")
+
 
         idPat = re.compile("^[0-9]{10}$")
         idPat6 = re.compile("^[0-9]{6}$")
@@ -60,7 +56,7 @@ class Login:
              return
 
         if passmatch[0] == 0:
-            tk.messagebox.showinfo('Error', "wrong pass")
+            tk.messagebox.showinfo('Error', "wrong password or user")
             return
         if adminpassmatch[0] != 1:
             self.window.destroy()

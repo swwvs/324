@@ -1,10 +1,9 @@
 import tkinter as tk
 import re
 import hashlib
-import csv
+
 import sqlite3
-from tkcalendar import Calendar
-import logging
+
 import tkinter.messagebox
 from tkinter import ttk
 
@@ -48,7 +47,10 @@ class Signup:
         type_var = tk.StringVar()
         self.user_type_combobox = ttk.Combobox(self.window, textvariable=type_var, values=["Student", "Employee", "Faculty"])
         self.user_type_combobox.grid(row=5, column=1)
+
         self.type9 = type_var
+
+
         self.button1 = tk.Button(self.window, text="Enter", command=self.action, bg='gray')
         self.button1.grid(row='6', column='0', columnspan=2, sticky='ew')
 
@@ -60,6 +62,7 @@ class Signup:
         Login.Login()
 
     def action(self):
+
         password = self.passEntry.get()
         passhash = hashlib.sha256(password.encode()).hexdigest()
         global id
@@ -68,25 +71,32 @@ class Signup:
         id = self.idEntry.get()
         phone = self.phoneEntry.get()
         email = self.emailEntry.get()
-        typeo = self.type9.get()
+        typeP = self.type9.get()
         connection = sqlite3.connect("k7.db")
         checkHaveAcc = connection.execute(f"select count() from KSU WHERE ID = {self.idEntry.get()} ").fetchone()
 
         if checkHaveAcc[0] == 1:
             tk.messagebox.showinfo('Error', 'You already have Account')
-
+            return
         passPat = re.compile("^[a-zA-Z0-9]{6,}$")
         idPat = re.compile("^[0-9]{10}$")
         idPat6 = re.compile("^[0-9]{6}$")
         emailVld = re.compile("^([a-zA-Z0-9\._-]+)(@ksu\.edu\.sa)$")
         phoneVld = re.compile("^(05)[0-9]{8}$")
-
+        if typeP not in ["Student", "Employee", "Faculty"]:
+            tk.messagebox.showinfo('Error', "Chose User Type")
+            return
         if not re.search(passPat, password):
             tk.messagebox.showinfo('Error', "Wrong input Password should have at least 6 or more digits ")
             return
 
-        if not (re.search(idPat, id) or re.search(idPat6, id)):
-            tk.messagebox.showinfo('Error', "ID must contain exactly 10  or 6 Numbers")
+        if typeP=="Employee" or typeP=="Faculty" :
+         if not re.search(idPat6, id):
+            tk.messagebox.showinfo('Error', "Faculty and Employee ID must contain exactly (6 digits) ")
+            return
+        if typeP=="Student":
+         if not re.search(idPat, id):
+            tk.messagebox.showinfo('Error', "Student ID must contain exactly (10 digits) ")
             return
 
         if not re.search(emailVld, email):
@@ -97,7 +107,7 @@ class Signup:
             tk.messagebox.showinfo('Error', "wrong phone")
             return
 
-        connection.execute(f"INSERT INTO KSU VALUES('{fname}','{lname}',{id},'{passhash}','{email}',{phone},'{typeo}')")
+        connection.execute(f"INSERT INTO KSU VALUES('{fname}','{lname}',{id},'{passhash}','{email}',{phone},'{typeP}')")
         tk.messagebox.showinfo( 'Data added',"Data added")
         print("Data added")
         connection.commit()
